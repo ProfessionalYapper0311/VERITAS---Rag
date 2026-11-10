@@ -14,3 +14,6 @@
     in case, not using uv 
     ![alt text](image.png)
 
+##Implementation Steps:
+    - **Phase 1 - Infrastructure** : Environment, PostgreSQL, AWS, Pinecone and Rius.
+
