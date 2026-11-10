@@ -1,0 +1,23 @@
+fastapi
+uvicorn[standard]
+
+#fastapi[all] if needed
+
+jinja2 #fast api template engine
+pydantic-settings #needed by fast api for settings management
+
+#database
+boto3 #aws service management 
+psycopg[binary,pool] #postgresql adapter with binary and connection pooling
+
+#rag development
+pypdf #required by rag
+python-docx #required by rag
+httpx #http client
+langgraph #entire agentic worklow
+pinecone #store embedded vectors in pinecone
+
+python-dotenv
+
+#agent observability
+glassflow-rius 

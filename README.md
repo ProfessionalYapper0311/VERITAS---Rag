@@ -1,1 +1,16 @@
 # VERITAS---Rag
+
+1. Initialization of environment
+
+```bash
+    uv init --bare
+    uv python pin 3.13
+    uv venv
+    .venv\Scripts\activate
+    uv add -r requirements.txt
+```
+
+2. Install these packages from req.txt
+    in case, not using uv 
+    ![alt text](image.png)
+

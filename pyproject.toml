@@ -1,0 +1,28 @@
+[project]
+name = "veritas-rag"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "boto3>=1.43.126",
+    "fastapi>=0.162.2",
+    "glassflow-rius>=1.5.6",
+    "httpx>=0.28.1",
+    "jinja2>=3.1.6",
+    "langgraph>=1.2.20",
+    "pinecone>=10.3.0",
+    "psycopg[binary,pool]>=3.3.8",
+    "pydantic-settings>=2.16.2",
+    "pypdf>=7.0.0",
+    "python-docx>=1.2.0",
+    "python-dotenv>=1.2.4",
+    "uvicorn[standard]>=0.54.0",
+]
+
+[project.scripts]
+veritas-rag = "veritas_rag:main"
+
+[build-system]
+requires = ["uv_build>=0.12.8,<0.13.0"]
+build-backend = "uv_build"
