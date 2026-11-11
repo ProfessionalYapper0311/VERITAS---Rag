@@ -11,14 +11,14 @@ client = boto3.client(
     "bedrock-runtime",
     region_name = os.getenv("AWS_REGION"),
     aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID"),
-    aws_secret_access_key_id = os.getenv("AWS_SECRET_ACCESS_KEY")
+    aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
 )
 
 #test 1: amazon titan embeddings
 embedding_response = client.invoke_model(
     modelId = os.getenv("BEDROCK_EMBED_MODEL"),
     body = json.dumps({
-        "input_text" : "Hello Amazon Bedrock",
+        "inputText" : "Hello Amazon Bedrock",
         "dimensions" : 1024,
         "normalize" : True #normalization done by default 
     }),
@@ -35,8 +35,8 @@ print("Embedding Dimensions: ", len(embed_data["embedding"]))
 
 
 #test 2: amazon titan text generation
-chat_response = client.invoke_model(
-    modelId = os.getnev("BEDROCK_CHAT_MODEL"),
+chat_response = client.converse(
+    modelId = os.getenv("BEDROCK_CHAT_MODEL"),
     messages = [
         {
             "role" : "user",
@@ -45,7 +45,7 @@ chat_response = client.invoke_model(
             }]
         }
     ],
-    inferenceConfig = {"max_Tokens" : 150},
+    inferenceConfig={"maxTokens": 150},
 )
 
 

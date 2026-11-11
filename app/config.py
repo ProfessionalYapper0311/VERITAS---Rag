@@ -9,7 +9,7 @@ class Settings(BaseSettings): ##centralized config, have entire access to .env v
     aws_secret_access_key:str = ''
     aws_session_token:str = '' #optional temp aws cred
     s3_bucket:str = ''
-    postgres_database_url:str = ''
+    database_url:str = ''
     bedrock_embed_model:str = 'amazon.titan-embed-text-v2:0'
     bedrock_chat_model:str = 'amazon.nova-lite-v1:0'
     embed_dimension:int = 1024
