@@ -17,3 +17,6 @@
 ##Implementation Steps:
     - **Phase 1 - Infrastructure** : Environment, PostgreSQL, AWS, Pinecone and Rius.
 
+
+3. Final graph workflow
+    ![alt text](graph.png)
