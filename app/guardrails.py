@@ -1,18 +1,19 @@
 import re
 from fastapi import HTTPException
 
-#injection and sensitive ouatput patterns
+# Injection and sensitive output patterns
 INJECTION = [
-    r"\bignore\s+(?:all\s+|any\s+|the\s+|previous\s+|prior\s+)?(?:instructions|rules|system\s+prompt)\b",
-    r"\b(?:reveal|print|show|dump|disclose)\s+(?:your\s+|the\s+|hidden\s+|internal\s+)*(?:system|developer)\s+(?:prompt|instructions)\b",
-    r"\b(?:reveal|print|dump|expose|send)\s+(?:your\s+|all\s+|the\s+)*(?:api\s*keys?|passwords?|credentials?|secrets?|access\s+tokens?)\b",
-    r"\b(?:bypass|disable|turn\s+off)\s+(?:all\s+|the\s+)?(?:guardrails|safety\s+checks|security\s+controls)\b",
-    r"\b(?:pretend|act)\s+(?:you\s+are|as\s+if\s+you\s+are)\s+(?:the\s+)?(?:system|developer|administrator)\b",   
+    re.compile(r"\bignore\s+(?:all\s+|any\s+|the\s+|previous\s+|prior\s+)*(?:instructions|rules|system\s+prompt)\b", re.I),
+    re.compile(r"\b(?:reveal|print|show|dump|disclose)\s+(?:your\s+|the\s+|hidden\s+|internal\s+)*(?:system|developer)\s+(?:prompt|instructions)\b", re.I),
+    re.compile(r"\b(?:reveal|print|dump|expose|send)\s+(?:your\s+|all\s+|the\s+)*(?:api\s*keys?|passwords?|credentials?|secrets?|access\s+tokens?)\b", re.I),
+    re.compile(r"\b(?:bypass|disable|turn\s+off)\s+(?:all\s+|the\s+)?(?:guardrails|safety\s+checks|security\s+controls)\b", re.I),
+    re.compile(r"\b(?:pretend|act)\s+(?:you\s+are|as\s+if\s+you\s+are)\s+(?:the\s+)?(?:system|developer|administrator)\b", re.I),
 ]
 
 SENSITIVE_OUTPUT = [
     re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----", re.I),
     re.compile(r"\b(?:AKIA|ASIA)[0-9A-Z]{16}\b"),
+    re.compile(r"\bAIza[0-9A-Za-z-_]{35}\b"),
     re.compile(r"(?i)\b(?:aws_secret_access_key|pinecone_api_key|database_url)\s*[:=]\s*\S+"),
     re.compile(r"(?i)\b(?:password|api[_ -]?key|secret[_ -]?key)\s*[:=]\s*[\"']?[^\s\"']{12,}"),
 ]
@@ -23,21 +24,20 @@ class GuardrailBlocked(ValueError):
 
 def classify_input(question: str) -> str | None:
     """Classify the input question for guardrail violations."""
-    if not question or question.strip():
+    if not question or not question.strip():
         return 'empty_input'
-    if any(re.search(pattern, question, re.I) for pattern in INJECTION):
+    if any(pattern.search(question) for pattern in INJECTION):
         return 'prompt_injection_or_secret_request'
     return None
 
-def contains_sensitive_output(text : str) -> bool:
+def contains_sensitive_output(text: str) -> bool:
     """Check if the output text contains sensitive information."""
     return any(pattern.search(text or '') for pattern in SENSITIVE_OUTPUT)
 
 
-
-def check_input(question: str) -> str | None:
+def check_input(question: str) -> str:
     """Check input for guardrail violations."""
-    reason =  classify_input(question)
+    reason = classify_input(question)
     if reason:
         raise HTTPException(status_code=400, detail=f"Guardrail violation: {reason}")
     return question

@@ -11,16 +11,19 @@ def history(tenant: str, conversation_id: uuid.UUID):
             WHERE tenant_id=%s AND conversation_id=%s ORDER BY id DESC LIMIT %s)
             recent ORDER BY id ASC
             """,
-            (tenant, conversation_id, get_settings().memory_turns*2))
+            (tenant, conversation_id, get_settings().memory_turns*2)).fetchall()
     return rows
 
 #helper func to save any convo
 def save_turn(tenant:str, conversation_id: uuid.UUID, question:str, response:str):
     with get_db_connection() as conn:
-        conn.execute("""
+        conn.execute(
+            """
             INSERT INTO chat_messages(tenant_id, conversation_id, role, content)
             VALUES(%s, %s, 'user', %s), (%s, %s, 'assistant', %s)
-            """)
+            """,
+            (tenant, conversation_id, question, tenant, conversation_id, response),
+        )
 
 #list all the messages for a given conversation
 def list_messages(tenant: str, conversation_id: uuid.UUID):

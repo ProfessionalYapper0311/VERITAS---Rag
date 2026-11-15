@@ -53,7 +53,7 @@ def route(s): #router decided whether to use the context or not
 #no evidence
 @trace("no_evidence")
 def no_evidence(s):
-    return{'answer': 'I count not find any supporting evidence in the knowledge base you are authorized to access.' ,
+    return{'answer': 'I could not find any supporting evidence in the knowledge base you are authorized to access.' ,
            'status': 'no_evidence'}
 
 @trace("generate")
@@ -61,7 +61,7 @@ def generate(s):
     evidence='\n\n'.join(f'[{i+1}] {h["metadata"].get("title", "Document")}, page {h["metadata"].get("page",1)}: {h["metadata"].get("text", "")}' for i,h in enumerate(s['passages']))
     return {'answer': answer(s['question'],evidence,s.get('history', [])), 'status':'answered'}
 
-@trace("validate")
+
 @trace("validate")
 def validate(s):
     try:
