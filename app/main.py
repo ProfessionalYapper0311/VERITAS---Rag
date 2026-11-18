@@ -111,6 +111,18 @@ def documents(p:Principle=Depends(principle)):
     return {"documents" : rows} 
 
 
+def is_hitl_action(question: str) -> bool:
+    q = question.lower()
+    # Sensitive operations requiring human-in-the-loop approval:
+    # Deletion, removal, purging, data export, or policy alterations
+    triggers = (
+        'delete', 'remove', 'purge', 'wipe', 'erase', 'drop document',
+        'clear all documents', 'clear documents', 'empty database',
+        'export', 'send to', 'update policy'
+    )
+    return any(x in q for x in triggers)
+
+
 #build the chat api
 #input-giardrail- update
 #start chat- update memory
@@ -122,7 +134,7 @@ def ask(body:Ask,p:Principle=Depends(principle)):
         with get_db_connection() as conn:
             audit(conn,p.subject,p.tenant,'guardrail_input_blocked',{'reason':reason})
         raise HTTPException(400,f'Input guardrail blocked this request ({reason}).')
-    if get_settings().hitl_enabled and any(x in body.question.lower() for x in ('delete','export','send to','update policy')):
+    if get_settings().hitl_enabled and is_hitl_action(body.question):
         with get_db_connection() as conn:
             row=conn.execute('INSERT INTO approvals(tenant_id,requester,question,status) VALUES (%s,%s,%s,%s) RETURNING id',(p.tenant,p.subject,body.question,'pending')).fetchone()
             audit(conn,p.subject,p.tenant,'approval_requested',{'id':str(row['id'])})
@@ -174,11 +186,38 @@ def list_approvals(p:Principle=Depends(principle)):
 def decide(approval_id:uuid.UUID,body:ApprovalDecision,p:Principle=Depends(principle)):
     if not p.admin: raise HTTPException(403,'Admin only')
     with get_db_connection() as conn:
-        row=conn.execute("UPDATE approvals SET status=%s,reviewer=%s,reviewed_at=now() WHERE id=%s AND tenant_id=%s AND status='pending' RETURNING id",('approved' if body.approve else 'rejected',p.subject,approval_id,p.tenant)).fetchone()
+        row = conn.execute(
+            "SELECT id, question, status FROM approvals WHERE id=%s AND tenant_id=%s AND status='pending'",
+            (approval_id, p.tenant)
+        ).fetchone()
         if not row: raise HTTPException(404,'Pending approval not found')
-        audit(conn,p.subject,p.tenant,'approval_decided',{'id':str(approval_id),'approved':body.approve})
-    # Approval is a decision record only; it never automatically executes a destructive action.
-    return {'status':'approved' if body.approve else 'rejected','executed':False}
+
+        executed = False
+        exec_result = None
+
+        if body.approve:
+            # If the approved request is a deletion or removal operation, execute it
+            if is_hitl_action(row['question']):
+                from app.deletion import execute_approved_deletion
+                exec_result = execute_approved_deletion(tenant_id=p.tenant, question=row['question'], actor=p.subject)
+                executed = bool(exec_result and exec_result.get('status') in ('success', 'warning', 'not_found'))
+
+        conn.execute(
+            "UPDATE approvals SET status=%s,reviewer=%s,reviewed_at=now() WHERE id=%s AND tenant_id=%s RETURNING id",
+            ('approved' if body.approve else 'rejected', p.subject, approval_id, p.tenant)
+        )
+        audit(conn, p.subject, p.tenant, 'approval_decided', {
+            'id': str(approval_id),
+            'approved': body.approve,
+            'executed': executed,
+            'result': exec_result
+        })
+
+    return {
+        'status': 'approved' if body.approve else 'rejected',
+        'executed': executed,
+        'execution_result': exec_result
+    }
 
 @app.get("/api/admin/guardrails")
 def guardrail_metrics(p:Principle=Depends(principle)):
