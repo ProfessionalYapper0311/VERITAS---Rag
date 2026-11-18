@@ -92,5 +92,5 @@ def process_s3_key(key):
     except Exception:
         log.exception(f'Ingestion failed for key {key}')
         with get_db_connection() as conn:
-            conn.execute(f"UPDATE documents SET status='failed' WHERE id = {doc['id']}")
+            conn.execute("UPDATE documents SET status='failed' WHERE id = %s", (doc['id'],))
         raise    

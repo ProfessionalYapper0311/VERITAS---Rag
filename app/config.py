@@ -1,4 +1,5 @@
 from functools import lru_cache
+from pydantic import Field, AliasChoices
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -8,11 +9,16 @@ class Settings(BaseSettings): ##centralized config, have entire access to .env v
     aws_access_key_id:str = ''
     aws_secret_access_key:str = ''
     aws_session_token:str = '' #optional temp aws cred
-    s3_bucket:str = ''
-    database_url:str = ''
+    s3_bucket:str = Field(default='', validation_alias=AliasChoices('s3_bucket', 'your_s3_bucket_name', 'S3_BUCKET'))
+    database_url:str = Field(default='', validation_alias=AliasChoices('database_url', 'postgres_database_url', 'DATABASE_URL', 'POSTGRES_DATABASE_URL'))
     bedrock_embed_model:str = 'amazon.titan-embed-text-v2:0'
     bedrock_chat_model:str = 'amazon.nova-lite-v1:0'
     embed_dimension:int = 1024
+
+    @property
+    def embed_dim(self) -> int:
+        return self.embed_dimension
+
     max_upload_bytes:int = 10485760 #10MB - user uploadding pdf etc. 
     pinecone_api_key:str = ''
     pinecone_index_name:str = 'veritas--rag-index'

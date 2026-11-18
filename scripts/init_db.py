@@ -1,4 +1,4 @@
-"""Initialize Atlas tables in Render PostgreSQL from infra/schema.sql.
+"""Initialize Veritas tables in Render PostgreSQL from infra/schema.sql.
 
 Usage (from project root): python scripts/init_db.py
 Safe to rerun: the supplied schema uses CREATE ... IF NOT EXISTS.
@@ -35,7 +35,7 @@ def main():
                 dbname = cur.fetchone()[0]
                 cur.execute('SELECT to_regclass(%s)', ('public.chat_messages',))
                 if cur.fetchone()[0] is None:
-                    raise RuntimeError('chat_mesxsages table was not created')
+                    raise RuntimeError('chat_messages table was not created')
                 for table in REQUIRED:
                     cur.execute('SELECT to_regclass(%s)', (f'public.{table}',))
                     if cur.fetchone()[0] is None:

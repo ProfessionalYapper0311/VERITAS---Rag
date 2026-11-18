@@ -10,7 +10,7 @@ from app.observability import trace
 def client(service):
     s = get_settings()
     if bool(s.aws_access_key_id) != bool(s.aws_secret_access_key): #both key not provided
-        raise ValueError("Both AWS_ACCESS_KEY_ID and AWS_sSECRET_ACCESS_KEY must be provided together.")
+        raise ValueError("Both AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY must be provided together.")
     
     options = {'region_name' : s.aws_region} #store the region
     if s.aws_access_key_id and s.aws_secret_access_key: #both key provided, AUTHENTICATE with the given region

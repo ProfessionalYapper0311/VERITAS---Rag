@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Veritas — Document Intelligence & Verification</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <div id="app" class="app-shell">
+    <!-- Top Navigation Header -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="brand">
+          <div class="brand-emblem" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              <path d="m9 12 2 2 4-4"/>
+            </svg>
+          </div>
+          <span class="brand-name">Veritas</span>
+        </div>
+
+        <nav class="nav-tabs" aria-label="Main Navigation">
+          <button type="button" class="nav-tab active" data-view="chat">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span>Chat</span>
+          </button>
+          <button type="button" class="nav-tab" data-view="documents">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+              <polyline points="10 9 9 9 8 9"/>
+            </svg>
+            <span>Documents</span>
+          </button>
+          <button type="button" class="nav-tab" data-view="approvals">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 14 14"/>
+            </svg>
+            <span>Approvals</span>
+            <span class="badge-count" id="pending-approvals-count" style="display:none;">0</span>
+          </button>
+          <button type="button" class="nav-tab" data-view="admin">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+              <line x1="8" y1="21" x2="16" y2="21"/>
+              <line x1="12" y1="17" x2="12" y2="21"/>
+            </svg>
+            <span>Admin</span>
+          </button>
+        </nav>
+      </div>
+
+      <div class="header-right">
+        <div class="context-badges">
+          <div class="pill-badge pill-tenant" title="Current Workspace Tenant">
+            <span class="pill-dot"></span>
+            <span id="tenant-label">demo-workspace</span>
+          </div>
+          <div class="pill-badge pill-user" title="Authenticated User">
+            <span id="user-label">demo-operator</span>
+            <span class="role-tag">Admin</span>
+          </div>
+        </div>
+
+        <div class="header-controls">
+          <button type="button" id="theme-toggle" class="btn-icon" aria-label="Toggle theme" title="Toggle light/dark theme">
+            <svg id="theme-icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="5"/>
+              <line x1="12" y1="1" x2="12" y2="3"/>
+              <line x1="12" y1="21" x2="12" y2="23"/>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+              <line x1="1" y1="12" x2="3" y2="12"/>
+              <line x1="21" y1="12" x2="23" y2="12"/>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+            <svg id="theme-icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+          </button>
+
+          <div class="status-indicator" id="system-status" title="System liveness status">
+            <span class="status-dot"></span>
+            <span class="status-text">Connected</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Screens Container -->
+    <main class="app-main">
+
+      <!-- ================= 1. CHAT SCREEN ================= -->
+      <section id="view-chat" class="screen-view active-view" aria-label="Chat Workspace">
+        <div class="chat-layout">
+          <!-- Conversation Sidebar -->
+          <aside class="chat-sidebar">
+            <div class="sidebar-header">
+              <button type="button" id="btn-new-chat" class="btn btn-primary btn-sm btn-block">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <span>New conversation</span>
+              </button>
+            </div>
+            <div class="sidebar-convos-title">Recent conversations</div>
+            <div class="conversations-list" id="conversations-list" role="list">
+              <!-- Rendered via JS -->
+            </div>
+          </aside>
+
+          <!-- Chat Conversation Viewport -->
+          <div class="chat-viewport">
+            <div class="chat-messages" id="chat-messages" role="log" aria-live="polite">
+              <!-- Initial Welcome State -->
+              <div class="chat-empty-state" id="chat-empty-state">
+                <div class="empty-icon">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    <path d="m9 12 2 2 4-4"/>
+                  </svg>
+                </div>
+                <h2>Grounded Intelligence</h2>
+                <p>Ask questions about your uploaded documents. Every answer is substantiated with interactive citations and verifiable source passages.</p>
+                
+                <div class="suggested-prompts">
+                  <button type="button" class="prompt-chip" data-prompt="What documents are available in this workspace?">What documents are available in this workspace?</button>
+                  <button type="button" class="prompt-chip" data-prompt="Summarize the key policies described in our documents.">Summarize the key policies described in our documents.</button>
+                  <button type="button" class="prompt-chip" data-prompt="Delete all old document versions">Delete all old document versions (Triggers approval)</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Chat Composer -->
+            <div class="chat-composer-area">
+              <form id="chat-form" class="chat-form">
+                <div class="composer-box">
+                  <textarea 
+                    id="chat-input" 
+                    class="composer-textarea" 
+                    placeholder="Ask a question about your documents... (Press Enter to send, Shift+Enter for newline)" 
+                    rows="1"
+                    required
+                    maxlength="2000"
+                    aria-label="Ask a question"
+                  ></textarea>
+                  <button type="submit" id="chat-submit-btn" class="btn-send" aria-label="Send message" title="Send message">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <line x1="22" y1="2" x2="11" y2="13"/>
+                      <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                    </svg>
+                  </button>
+                </div>
+                <div class="composer-footnote">
+                  <span>Questions are checked against input guardrails. Sensitive actions require admin approval.</span>
+                  <span id="char-counter" class="char-counter">0 / 2000</span>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Source Passage Panel (Citations) -->
+          <aside class="source-panel" id="source-panel" aria-label="Source Passages">
+            <div class="source-panel-header">
+              <div class="source-panel-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                </svg>
+                <span>Cited Passages</span>
+              </div>
+              <button type="button" id="close-source-panel" class="btn-icon-sm" aria-label="Close source panel">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+            <div class="source-panel-content" id="source-passages-list">
+              <div class="empty-sources">Select a citation badge like <span class="citation-demo">[1]</span> in an answer to view its verified source passage here.</div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ================= 2. DOCUMENTS SCREEN ================= -->
+      <section id="view-documents" class="screen-view" aria-label="Documents Management">
+        <div class="content-container">
+          <div class="page-title-row">
+            <div>
+              <h1 class="page-title">Document Library</h1>
+              <p class="page-desc">Upload knowledge base files. Documents are ingested into secure vector storage partitioned by your workspace.</p>
+            </div>
+            <button type="button" id="btn-refresh-docs" class="btn btn-secondary btn-sm">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+              <span>Refresh list</span>
+            </button>
+          </div>
+
+          <!-- Upload Drop Zone Card -->
+          <div class="card upload-card">
+            <div class="drop-zone" id="drop-zone">
+              <input type="file" id="file-picker" class="file-picker-input" accept=".pdf,.docx,.txt,.md" aria-label="Upload document">
+              <div class="drop-zone-icon">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/>
+                  <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+              </div>
+              <div class="drop-zone-text">
+                <strong>Drop file here</strong> or <span class="link-label">browse to choose</span>
+              </div>
+              <div class="drop-zone-formats">
+                <span>Supported: PDF, DOCX, TXT, MD</span>
+                <span>•</span>
+                <span>Max size: 10 MB</span>
+                <span>•</span>
+                <span>Direct S3 Presigned Upload</span>
+              </div>
+            </div>
+
+            <!-- Uploading Progress Bar -->
+            <div class="upload-progress-container" id="upload-progress-container" style="display:none;">
+              <div class="progress-details">
+                <span id="upload-filename">document.pdf</span>
+                <span id="upload-status-text">Uploading to S3...</span>
+              </div>
+              <div class="progress-bar-track">
+                <div class="progress-bar-fill" id="upload-progress-fill" style="width: 0%;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Document List Table Card -->
+          <div class="card table-card">
+            <div class="card-header">
+              <div class="card-title">
+                <span>Workspace Documents</span>
+                <span class="count-pill" id="docs-count">0</span>
+              </div>
+              <div class="search-box">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="docs-search" placeholder="Filter documents..." class="search-input">
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table" id="documents-table">
+                <thead>
+                  <tr>
+                    <th>Title & Format</th>
+                    <th>Status</th>
+                    <th>Version</th>
+                    <th>Uploaded</th>
+                    <th class="text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="documents-tbody">
+                  <!-- Rendered via JS -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Empty State for Documents -->
+            <div class="empty-card" id="docs-empty-state" style="display:none;">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <h3>No documents uploaded yet</h3>
+              <p>Upload a document above to begin asking questions grounded in your workspace data.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 3. APPROVALS SCREEN ================= -->
+      <section id="view-approvals" class="screen-view" aria-label="Human in the loop Approvals">
+        <div class="content-container">
+          <div class="page-title-row">
+            <div>
+              <h1 class="page-title">Approvals</h1>
+              <p class="page-desc">Human-in-the-loop safeguards. Sensitive or destructive actions (such as document deletion or policy modification) are held here for review.</p>
+            </div>
+            <button type="button" id="btn-refresh-approvals" class="btn btn-secondary btn-sm">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+              <span>Refresh</span>
+            </button>
+          </div>
+
+          <!-- Approvals Sub-navigation Tabs -->
+          <div class="sub-tabs">
+            <button type="button" class="sub-tab active" data-subtab="pending">
+              <span>Pending Review</span>
+              <span class="sub-tab-badge" id="subtab-pending-count">0</span>
+            </button>
+            <button type="button" class="sub-tab" data-subtab="history">
+              <span>Decision History</span>
+            </button>
+          </div>
+
+          <!-- Pending Queue Container -->
+          <div id="approvals-pending-view" class="subtab-content active">
+            <div id="approvals-pending-list" class="approvals-grid">
+              <!-- Rendered via JS -->
+            </div>
+            <div class="empty-card" id="approvals-pending-empty" style="display:none;">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
+              <h3>No pending approvals</h3>
+              <p>All sensitive operations have been reviewed. When a user requests an action requiring oversight, it will appear here.</p>
+            </div>
+          </div>
+
+          <!-- History Container -->
+          <div id="approvals-history-view" class="subtab-content">
+            <div id="approvals-history-list" class="approvals-grid">
+              <!-- Rendered via JS -->
+            </div>
+            <div class="empty-card" id="approvals-history-empty" style="display:none;">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+              <h3>No past decisions</h3>
+              <p>Decided approvals and audit records will be listed here.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 4. ADMIN DASHBOARD SCREEN ================= -->
+      <section id="view-admin" class="screen-view" aria-label="Admin Metrics and Guardrails">
+        <div class="content-container">
+          <div class="page-title-row">
+            <div>
+              <h1 class="page-title">Admin Dashboard</h1>
+              <p class="page-desc">System health, document ingestion metrics, feedback evaluation, and guardrail telemetry.</p>
+            </div>
+            <button type="button" id="btn-refresh-admin" class="btn btn-secondary btn-sm">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+              <span>Refresh metrics</span>
+            </button>
+          </div>
+
+          <!-- Metrics Row -->
+          <div class="metrics-grid">
+            <!-- Ingestion Metrics Card -->
+            <div class="card metric-card">
+              <div class="metric-card-header">
+                <span class="metric-label">Document Ingestion</span>
+                <span class="metric-icon-wrap icon-teal">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+                </span>
+              </div>
+              <div class="metric-big-number" id="metric-docs-total">0</div>
+              <div class="metric-breakdown" id="metric-docs-breakdown">
+                <span class="stat-pill stat-ready">0 ready</span>
+                <span class="stat-pill stat-pending">0 processing</span>
+                <span class="stat-pill stat-failed">0 failed</span>
+              </div>
+            </div>
+
+            <!-- Feedback Sentiment Card -->
+            <div class="card metric-card">
+              <div class="metric-card-header">
+                <span class="metric-label">User Feedback</span>
+                <span class="metric-icon-wrap icon-amber">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+                </span>
+              </div>
+              <div class="metric-big-number" id="metric-feedback-total">0</div>
+              <div class="metric-breakdown" id="metric-feedback-breakdown">
+                <span class="stat-pill stat-positive">👍 0 helpful</span>
+                <span class="stat-pill stat-negative">👎 0 unhelpful</span>
+              </div>
+            </div>
+
+            <!-- Guardrails Card -->
+            <div class="card metric-card">
+              <div class="metric-card-header">
+                <span class="metric-label">Guardrail Blocks</span>
+                <span class="metric-icon-wrap icon-brick">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                </span>
+              </div>
+              <div class="metric-big-number" id="metric-guardrail-total">0</div>
+              <div class="metric-breakdown" id="metric-guardrail-breakdown">
+                <span class="stat-pill stat-input">0 input injections</span>
+                <span class="stat-pill stat-output">0 output leaks</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Observability & Telemetry Information Card -->
+          <div class="card detail-card">
+            <div class="card-header">
+              <div class="card-title">Distributed Observability & Audit Traces</div>
+            </div>
+            <div class="observability-body">
+              <div class="obs-desc">
+                <p>Veritas instrumentation tracks LLM inference, embedding generation, vector search latency, and guardrail execution across LangGraph nodes.</p>
+                <p>Telemetry spans and traces are streamed directly to <strong>GlassFlow Rius</strong> for end-to-end production monitoring.</p>
+              </div>
+              <div class="obs-action">
+                <a href="https://app.glassflow.com" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">
+                  <span>Open GlassFlow Rius Traces</span>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- System Configuration Card -->
+          <div class="card detail-card">
+            <div class="card-header">
+              <div class="card-title">Runtime Environment</div>
+            </div>
+            <div class="config-grid">
+              <div class="config-item">
+                <span class="config-name">AWS Deployment Region</span>
+                <span class="config-val" id="config-region">us-east-1</span>
+              </div>
+              <div class="config-item">
+                <span class="config-name">Guardrail Enforcement Mode</span>
+                <span class="config-val" id="config-guardrail-mode">Deterministic (Regex + Classifiers)</span>
+              </div>
+              <div class="config-item">
+                <span class="config-name">HITL Approval Interceptor</span>
+                <span class="config-val">Active (Enabled)</span>
+              </div>
+              <div class="config-item">
+                <span class="config-name">Vector Index</span>
+                <span class="config-val">Pinecone Serverless (1024-dim Titan)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Feedback Modal Dialog -->
+    <div class="modal-backdrop" id="feedback-modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="feedback-modal-title">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h3 id="feedback-modal-title">Provide Answer Feedback</h3>
+          <button type="button" class="btn-icon-sm" id="close-feedback-modal" aria-label="Close dialog">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <form id="feedback-form">
+          <div class="modal-body">
+            <div class="feedback-rating-display">
+              <span id="feedback-icon-preview">👍</span>
+              <span id="feedback-rating-label">Helpful</span>
+            </div>
+            <label for="feedback-note" class="form-label">Optional notes or comments:</label>
+            <textarea id="feedback-note" class="form-textarea" rows="3" maxlength="500" placeholder="What was accurate or what could be improved?"></textarea>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="btn-cancel-feedback">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="btn-save-feedback">Submit Feedback</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Confirm Modal Dialog (e.g. Delete Document Request / Approval Decision) -->
+    <div class="modal-backdrop" id="confirm-modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h3 id="confirm-modal-title">Confirm Action</h3>
+          <button type="button" class="btn-icon-sm" id="close-confirm-modal" aria-label="Close dialog">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p id="confirm-modal-message">Are you sure you want to proceed?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btn-confirm-cancel">Cancel</button>
+          <button type="button" class="btn btn-primary" id="btn-confirm-ok">Proceed</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toast-container" aria-live="assertive"></div>
+  </div>
+
+  <script src="/static/js/script.js"></script>
+</body>
+</html>
