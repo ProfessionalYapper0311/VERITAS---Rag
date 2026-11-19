@@ -14,10 +14,6 @@
     in case, not using uv 
     ![alt text](image.png)
 
-##Implementation Steps:
-    - **Phase 1 - Infrastructure** : Environment, PostgreSQL, AWS, Pinecone and Rius.
-    - **Phase 2 - AI ENGINEERING** : RAG, Memory, Guardrails, HITL, Observability and Langgraph.
-
 3. Final graph workflow
     ![alt text](graph.png)
 
